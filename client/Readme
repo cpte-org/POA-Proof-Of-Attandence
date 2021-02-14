@@ -1,0 +1,4 @@
+    [] unlock eth account
+    [] call contract functions
+        [] send() call to signCheckIn(organizationId, locationId)
+        [] call() sign checkOut()
