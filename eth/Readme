@@ -1,3 +1,23 @@
+Attendance.sol:
+    * erc721
+        - mint(uint roleId ,address toAddr) // roleId: admin || manager || member
+        - burn(address tokenId) // can user other than token owner burn token erc721 ?
+        - transfer(address toAddr)
+    * admin is manager
+        - addOrganization()
+        - removeOrganization()
+        - addManager(address managerAddr)
+        - removeManager(address managerAddr) 
+    * manager is member
+        - addMember(address memberAddr)
+        - removeMember(address memberAddr)
+    * member is default
+        - signCheckIn()
+        - signCheckOut()
+    * default
+        - like()
+        - comment()
+
 Specifications:
     - default domains/organizationIds:
         /*
@@ -11,8 +31,8 @@ Specifications:
         * manager's child
         * addOrganization()
         * removeOrganization()
-        * addManager()
-        * removeManager()
+        * addManager(address managerAddr){if(msg.sender==admin){erc721.mint(managerAddr)}}
+        * removeManager(address managerAddr){if(msg.sender==admin){erc721.burn(managerAddr)}}
     - manager role manages 1 to many organizations
         * member's child
         * addMember()
