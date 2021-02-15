@@ -18,12 +18,12 @@ let gasPrice= "20000000000";
 var web3 = new Web3(new 
 Web3.providers.HttpProvider(testnet));
 
-let abi = JSON.parse(fs.readFileSync('./contracts/attendance.json', 'utf8'));
+let contract_abi = JSON.parse(fs.readFileSync('./contracts/attendance.json', 'utf8'));
 
 web3.eth.getBalance(walletAddress).then(bal => { console.log(" [Notice!] Wallet balance: ",bal); });
 
 
-var attendanceContract = new web3.eth.Contract(abi, contract_address);
+var attendanceContract = new web3.eth.Contract(contract_abi, contract_address);
 
 async function send(web3, privateKey, gasPrice, contract) {
     const account = web3.eth.accounts.privateKeyToAccount(privateKey).address;

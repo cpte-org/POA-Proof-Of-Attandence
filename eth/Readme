@@ -1,3 +1,31 @@
+Specifications:
+    - default domains/organizationIds:
+        /*
+        // roles shall be replaced by erc-721 token
+        0x0000: default domain
+        0x0001: admin domain
+        0x0002: manager domain
+        0xXXXX: organizations domain
+        */
+    - admin role creates 1 to many organizations (organizationIds then gets generated)
+        * manager's child
+        * addOrganization()
+        * removeOrganization()
+        * addManager()
+        * removeManager()
+    - manager role manages 1 to many organizations
+        * member's child
+        * addMember()
+        * removeMember()
+    - member role check in/out from locations under subscribed organizations
+        * default's child
+        * signCheckIn()
+        * signCheckOut()
+    - default user comments on organization/admin/manager/member
+        * like()
+        * comment()
+        
+        
 To-do:
     [] Check poap role token availability In-contract - https://medium.com/@blockchain101/calling-the-function-of-another-contract-in-solidity-f9edfa921f4c
     [] check if already check-in: return "already checked-in", locationId
@@ -5,3 +33,5 @@ To-do:
     [] organizer adds locationId
     
     [] organizationAdmin make payments to users' wallets (use case senario: send dai to pay 4 contract interaction fees)
+    [] mintable erc-721 tokens of types: admin, manager and member token
+    

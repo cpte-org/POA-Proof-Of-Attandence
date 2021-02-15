@@ -1,3 +1,7 @@
+UI/US: launch qr reader at app start.. if bool(checked-in)==true, show check-out button
+
+
+    [] generate eth account
     [] unlock eth account
     [] call contract functions
         [] send() call to signCheckIn(organizationId, locationId)
