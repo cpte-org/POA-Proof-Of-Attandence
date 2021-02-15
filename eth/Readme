@@ -2,10 +2,10 @@ Specifications:
     - default domains/organizationIds:
         /*
         // roles shall be replaced by erc-721 token
-        0x0000: default domain
-        0x0001: admin domain
-        0x0002: manager domain
-        0xXXXX: organizations domain
+        0x0000: default domain //no erc-721
+        0x0001: admin domain //erc-721: POA_admin
+        0x0002: manager domain //erc-721: POA_manager
+        0xXXXX: organizations domain //erc-721: POA_member 
         */
     - admin role creates 1 to many organizations (organizationIds then gets generated)
         * manager's child
