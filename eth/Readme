@@ -1,3 +1,5 @@
+[DRAFT]
+
 Attendance.sol:
     * erc721
         - mint(uint roleId ,address toAddr) // roleId: admin || manager || member
