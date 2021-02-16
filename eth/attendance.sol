@@ -1,5 +1,8 @@
  pragma solidity ^0.6.0;
 
+// Temporary fix #1
+// Solution: One account memberOf multiple organizations
+
 
 contract organization {
     
@@ -11,11 +14,11 @@ contract organization {
     
     struct Member {
         //roles
+        bytes32 memberOf;
         bool owner;
         bool admin;
         bool manager; 
         bool staff; 
-
     }
     struct Organization {
         bytes32 id;
@@ -36,12 +39,20 @@ contract organization {
     constructor() public {
         chairperson = msg.sender;
     }
+    
     function randomIdGenerator () internal view returns (bytes32 hash){
         //organization.name = owner.address + blockstamp
         return keccak256(abi.encodePacked(block.timestamp));
     }
     
     function createOrganization(bytes32 _name) public {
+        // Temporary fix #1
+        require(
+            !members[msg.sender].owner && !members[msg.sender].admin && !members[msg.sender].manager && !members[msg.sender].staff,
+            "Account role's already assigned!"
+            );
+        // End fix
+        
         bytes32 O_UID = randomIdGenerator(); // organization unique id
         organizations.push(Organization({
                 id: O_UID,
@@ -49,6 +60,7 @@ contract organization {
                 owner: msg.sender
             }));
         
+        members[msg.sender].memberOf = O_UID;
         members[msg.sender].owner = true;
         
         emit createOrgEvent(O_UID, _name, msg.sender);
@@ -58,27 +70,38 @@ contract organization {
     // [0]: staff  [1]: manager  [2]: admin  [3]: owner 
     //remove=!add
     //[TO-DO] add OrganizationId and divisionId
-    function manageMember(bool add, uint roleId, address newMember) public {
-
-        if (roleId==0){
+    function manageMember(bool _add, bytes32 _OrganizationId, uint _roleId, address _newMember) public {
+        
+        // Temporary fix #1
+        require(
+            !members[_newMember].owner && !members[_newMember].admin && !members[_newMember].manager && !members[_newMember].staff,
+            "Account role's already assigned!"
+            );
+        // End fix
+        
+        require(
+            members[msg.sender].memberOf == _OrganizationId,
+            "Only members allowed."
+            );
+        if (_roleId==0){
             require(
             members[msg.sender].manager,
             "Only manager can add staff."
             );
-            members[newMember].staff = add;
+            members[_newMember].staff = _add;
         
-        } else if (roleId==1){
+        } else if (_roleId==1){
             require(
             members[msg.sender].admin,
             "Only admin can add manager."
             );
-            members[newMember].manager = add;
-        } else if (roleId==2){
+            members[_newMember].manager = _add;
+        } else if (_roleId==2){
             require(
             members[msg.sender].owner,
             "Only owner can add admin."
             );
-            members[newMember].admin = add;
+            members[_newMember].admin = _add;
         }
     }
     
