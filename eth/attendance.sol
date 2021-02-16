@@ -1,63 +1,88 @@
  pragma solidity ^0.6.0;
 
 
-contract attendance {
-    string public name = "attendance protocol";
-    address public owner;
-
-    address public employee;
-    uint256 public organizationId;
-    uint256 public locationId;
+contract organization {
     
-    //uint sum;
+    // START EVENTS
+    event createOrgEvent(bytes32 indexed _organizationId, bytes32 _organizationName, address _owner);
     
+    
+    // END EVENTS
+    
+    struct Member {
+        //roles
+        bool owner;
+        bool admin;
+        bool manager; 
+        bool staff; 
 
+    }
+    struct Organization {
+        bytes32 id;
+        bytes32 name;   // short name (up to 32 bytes)
+        address owner;
+    }
+    
+    address public chairperson;
+    
+    // This declares a state variable that
+    // stores a `Member` struct for each possible address.
+    mapping(address => Member) public members;
+    
+    // A dynamically-sized array of `Organization` structs.
+    Organization[] public organizations;
+    
+    /// Create a new ballot to choose one of `proposalNames`.
     constructor() public {
-        owner = msg.sender;
+        chairperson = msg.sender;
     }
-
-
-    function admin() public onlyOwner {
-        //admin area
+    function randomIdGenerator () internal view returns (bytes32 hash){
+        //organization.name = owner.address + blockstamp
+        return keccak256(abi.encodePacked(block.timestamp));
     }
+    
+    function createOrganization(bytes32 _name) public {
+        bytes32 O_UID = randomIdGenerator(); // organization unique id
+        organizations.push(Organization({
+                id: O_UID,
+                name: _name,
+                owner: msg.sender
+            }));
+        
+        members[msg.sender].owner = true;
+        
+        emit createOrgEvent(O_UID, _name, msg.sender);
+    }
+    
+    //roleId
+    // [0]: staff  [1]: manager  [2]: admin  [3]: owner 
+    //remove=!add
+    //[TO-DO] add OrganizationId and divisionId
+    function manageMember(bool add, uint roleId, address newMember) public {
 
-
-    function signCheckIn(uint _organizationId, uint _locationId) public returns (bool o_checkedIn){
-        employee=msg.sender;
-
-        if (_organizationId != 0 && _locationId != 0) {
-            organizationId=_organizationId;
-            locationId=_locationId;
-            o_checkedIn=true;
+        if (roleId==0){
+            require(
+            members[msg.sender].manager,
+            "Only manager can add staff."
+            );
+            members[newMember].staff = add;
+        
+        } else if (roleId==1){
+            require(
+            members[msg.sender].admin,
+            "Only admin can add manager."
+            );
+            members[newMember].manager = add;
+        } else if (roleId==2){
+            require(
+            members[msg.sender].owner,
+            "Only owner can add admin."
+            );
+            members[newMember].admin = add;
         }
-        else
-            o_checkedIn=false;
-        return o_checkedIn;
-    }
-
-    
-    
-    
-
-    function signCheckOut() public pure returns (bool o_checkedOut) {
-        //if already checked-in, then check-out. else return "not checked-in" error
-        //employee=msg.sender;
-        if (true)
-            o_checkedOut=true;
-        return o_checkedOut;
-    }
-
-    
-    modifier onlyOwner(){
-        require(msg.sender == owner);
-        _;
     }
     
-/*
-    modifier onlyEmployee(){
-        //only "employee" badge owner
-        require(msg.sender == employee);
-        _;
-    }
-*/
+    
 }
+
+

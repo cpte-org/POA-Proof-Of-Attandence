@@ -3,15 +3,20 @@ Attendance.sol:
         - mint(uint roleId ,address toAddr) // roleId: admin || manager || member
         - burn(address tokenId) // can user other than token owner burn token erc721 ?
         - transfer(address toAddr)
-    * admin is manager
+    * chairperson can initiate contract's self-destruction
+    
+    * owner is admin
+        - addAdmin()
+        - removeAdmin()
         - addOrganization()
         - removeOrganization()
+    * admin is manager
         - addManager(address managerAddr)
         - removeManager(address managerAddr) 
     * manager is member
-        - addMember(address memberAddr)
-        - removeMember(address memberAddr)
-    * member is default
+        - addStaff(address staffAddr)
+        - removeStaff(address staffAddr)
+    * staff is default
         - signCheckIn()
         - signCheckOut()
     * default
