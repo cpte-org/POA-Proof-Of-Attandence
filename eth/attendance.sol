@@ -1,15 +1,27 @@
  pragma solidity ^0.6.0;
 
+// Note: 
+// uint overflow: matesafe https://ethereumdev.io/safemath-protect-overflows/
+//
 // Temporary fix #1
 // Solution: One account memberOf multiple organizations
 // Temporary fix #2
 // Solution:
+// Temporary fix #3: _orgId replaced by the org's index in array [privacy and scalling limitation!]
+// Solution: get org object by _orgId instead of index
+// Temporary fix #4: [EASY-TESTING]
+// Solution: change to random locationId generation 
+// 
 
 contract organization {
     
     // START EVENTS
     
     event orgCreatedEvent(address sender, bytes32 indexed _organizationId, bytes32 _organizationName, address _owner);
+    
+    //TO-DO?
+    //event orgRemovedEvent(address sender, bytes32 indexed _organizationId, bytes32 _organizationName, address _owner);
+    
     event userManagedEvent(address sender, bool added, bytes32 _organizationId, uint8 _roleId, address _newMember);
     
     event locationManagedEvent(address sender, bool added, uint indexed locationId, bytes32 locationName, bytes32 _organizationId);
@@ -36,10 +48,12 @@ contract organization {
         bytes32 id;
         bytes32 name;   // short name (up to 32 bytes)
         address owner;
+        uint numLocations;
+        mapping (uint => Location) locations;
     }
     
     struct Location {
-        bytes32 id;
+        uint256 id;
         bytes32 name;   // short name (up to 32 bytes)
         bytes32 memberOfOrg;
     }
@@ -65,6 +79,11 @@ contract organization {
         return keccak256(abi.encodePacked(block.timestamp));
     }
     
+    //xdai blocktime = 5 seconds
+    function uint256randomnessGenerator () internal view returns (uint256 hash){
+        //organization.name = owner.address + blockstamp
+        return block.timestamp;
+    }
     
     ////////////////////////////////
     //                            //
@@ -73,7 +92,7 @@ contract organization {
     ////////////////////////////////
     
     
-    function createOrganization(bytes32 _orgName) public {
+    function manageOrganization(bytes32 _orgName, uint256 _numLocations) public {
         // Temporary fix #1
         require(
             !members[msg.sender].owner && !members[msg.sender].admin && !members[msg.sender].manager && !members[msg.sender].staff,
@@ -85,7 +104,8 @@ contract organization {
         organizations.push(Organization({
                 id: O_UID,
                 name: _orgName,
-                owner: msg.sender
+                owner: msg.sender,
+                numLocations: _numLocations
             }));
         
         members[msg.sender].memberOfOrg = O_UID;
@@ -111,6 +131,7 @@ contract organization {
     // [0]: staff  [1]: manager  [2]: admin  [3]: owner 
     //remove=!add
     //[TO-DO] add OrganizationId and divisionId
+    
     function manageMember(bool _add, bytes32 _orgId, uint8 _roleId, address _newMember) public {
         
         // Temporary fix #1
@@ -159,15 +180,26 @@ contract organization {
     
     // Add or remove locations
     
-    function manageLocation(bool _add, uint _locId, bytes32 _locName, bytes32 _orgId) public {
-
+    // Temporary fix #3
+    // Temporary fix #4
+    // Currenty supports addLocation only
+    function manageLocation(bool _add/*, uint256 _locId*/, bytes32 _locName, uint256 _organizationArrayIndex, bytes32 _orgId) public returns (uint256 _locationName){
+        
+        // Note: require owner is for testing purposes (maybe Temporary)
+        // Reason: separate responsablities.. smt legal matter like this.. Cring bru
         require(
             members[msg.sender].owner || members[msg.sender].admin,
             "Only members allowed."
             );
-            
-        //locId mapped to orgId?
         
+        uint256 _locId = uint256randomnessGenerator();
+        
+        Organization storage o = organizations[_organizationArrayIndex];
+
+        o.locations[o.numLocations++] = Location({id: _locId, name: _locName, memberOfOrg: _orgId});
+        
+        return organizations[_organizationArrayIndex].locations[--o.numLocations].id;
+
         emit locationManagedEvent(msg.sender, _add, _locId, _locName, _orgId);
     }
     
@@ -180,13 +212,17 @@ contract organization {
     // 
     
     function checkIn(bytes32 _orgId, uint _locId) public {
-
         require(
-            members[msg.sender].isRegistred,
+            members[msg.sender].memberOfOrg == _orgId,
             "Only members allowed."
             );
-            
-        // orgId.locId exists?
+        
+        
+        // [T0_DO]
+        // locId exists?
+        
+        
+        
         
         emit checkedInEvent(msg.sender, _orgId, _locId);
     }
@@ -202,12 +238,12 @@ contract organization {
     function checkOut(bytes32 _orgId, uint _locId) public {
 
         require(
-            members[msg.sender].isRegistred,
+            members[msg.sender].memberOfOrg == _orgId,
             "Only members allowed."
             );
-            
-        // orgId.locId exists?
-        // member is/already checked In?
+        // [T0_DO]    
+        // locId exists?
+        // member currently checked In?
         // 
         
         emit checkedOutEvent(msg.sender, _orgId, _locId);
