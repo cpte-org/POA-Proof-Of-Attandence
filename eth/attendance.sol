@@ -31,11 +31,13 @@ contract organization {
         bool manager; 
         bool staff; 
     }
+    
     struct Organization {
         bytes32 id;
         bytes32 name;   // short name (up to 32 bytes)
         address owner;
     }
+    
     struct Location {
         bytes32 id;
         bytes32 name;   // short name (up to 32 bytes)
@@ -205,7 +207,7 @@ contract organization {
             );
             
         // orgId.locId exists?
-        // member checked In?
+        // member is/already checked In?
         // 
         
         emit checkedOutEvent(msg.sender, _orgId, _locId);
