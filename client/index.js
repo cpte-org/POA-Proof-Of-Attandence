@@ -11,7 +11,7 @@ const walletAddress = process.env.WALLETADDR;
 const privateKey = process.env.PRIVATEKEY;
 
 // Contract parameters
-let organizationId = "0x4f99c9652e623a681557e6fbd957fbb8b268e0a7dd057bd79e2fa41b5ebed442"; // Set durring setup, can be changed in settings
+let organizationId = "0xded6f9a302ddf231a6331498ef7072d6f217c54e8c930050c90497827eb3d3d2"; // Device local persistant storage
 let locationId = "1613668368"; // Retreived from scanned QR code
 
 let gasPrice= "20000000000";
@@ -41,5 +41,5 @@ async function send(web3, privateKey, gasPrice, contract) {
 }
 
 send(web3, privateKey, gasPrice, attendanceContract).then((receipt)=>{console.log(receipt);}).catch((error) => {
-    console.error(error);
-  });;
+  console.error(error);
+});;

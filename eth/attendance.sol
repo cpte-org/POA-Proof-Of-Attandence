@@ -13,7 +13,7 @@
 // Solution: change to random locationId generation 
 // 
 
-contract organization {
+contract attendance {
     
     // START EVENTS
     
@@ -145,6 +145,10 @@ contract organization {
             members[msg.sender].memberOfOrg == _orgId,
             "Only members allowed."
             );
+            
+        // added to Organization
+        members[_newMember].memberOfOrg = _orgId;
+        
         if (_roleId==0){
             require(
             members[msg.sender].manager,
@@ -183,7 +187,7 @@ contract organization {
     // Temporary fix #3
     // Temporary fix #4
     // Currenty supports addLocation only
-    function manageLocation(bool _add/*, uint256 _locId*/, bytes32 _locName, uint256 _organizationArrayIndex, bytes32 _orgId) public returns (uint256 _locationName){
+    function manageLocation(bool _add/*, uint256 _locId*/, bytes32 _locName, uint256 _organizationArrayIndex, bytes32 _orgId) public /* returns (uint256 _locationName)*/{
         
         // Note: require owner is for testing purposes (maybe Temporary)
         // Reason: separate responsablities.. smt legal matter like this.. Cring bru
@@ -198,9 +202,10 @@ contract organization {
 
         o.locations[o.numLocations++] = Location({id: _locId, name: _locName, memberOfOrg: _orgId});
         
-        return organizations[_organizationArrayIndex].locations[--o.numLocations].id;
+        //return organizations[_organizationArrayIndex].locations[--o.numLocations].id;
 
         emit locationManagedEvent(msg.sender, _add, _locId, _locName, _orgId);
+        
     }
     
     /////////////////
