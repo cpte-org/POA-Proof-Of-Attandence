@@ -1,8 +1,9 @@
  pragma solidity ^0.6.0;
 
 // Note: 
-// uint overflow: matesafe https://ethereumdev.io/safemath-protect-overflows/
-//
+// - uint overflow: matesafe https://ethereumdev.io/safemath-protect-overflows/
+// - zkSnarks for zero knowledge orgId privacy
+// 
 // Temporary fix #1
 // Solution: One account memberOf multiple organizations
 // Temporary fix #2

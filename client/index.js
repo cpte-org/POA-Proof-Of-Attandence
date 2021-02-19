@@ -23,7 +23,6 @@ let contract_abi = JSON.parse(fs.readFileSync('./contracts/attendance.json', 'ut
 
 //web3.eth.getBalance(walletAddress).then(bal => { console.log(" [Notice!] Wallet balance: ",bal); });
 
-
 var attendanceContract = new web3.eth.Contract(contract_abi, contract_address);
 
 async function send(web3, privateKey, gasPrice, contract) {
