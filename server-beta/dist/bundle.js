@@ -77,7 +77,7 @@
 /******/ 	__webpack_require__.o = function(object, property) { return Object.prototype.hasOwnProperty.call(object, property); };
 /******/
 /******/ 	// __webpack_public_path__
-/******/ 	__webpack_require__.p = "/home/besudo/Git/POA-Proof-Of-Attandence/server/dist";
+/******/ 	__webpack_require__.p = "/home/besudo/Git/POA-Proof-Of-Attandence/server-beta/dist";
 /******/
 /******/
 /******/ 	// Load entry module and return exports
@@ -2033,7 +2033,7 @@ eval("__webpack_require__.r(__webpack_exports__);\n/* harmony import */ var eth_
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
-eval("__webpack_require__(/*! /home/besudo/Git/POA-Proof-Of-Attandence/server/node_modules/webpack-dev-server/client/index.js?http://localhost:9011 */\"./node_modules/webpack-dev-server/client/index.js?http://localhost:9011\");\nmodule.exports = __webpack_require__(/*! ./src/index.js */\"./src/index.js\");\n\n\n//# sourceURL=webpack:///multi_(webpack)-dev-server/client?");
+eval("__webpack_require__(/*! /home/besudo/Git/POA-Proof-Of-Attandence/server-beta/node_modules/webpack-dev-server/client/index.js?http://localhost:9011 */\"./node_modules/webpack-dev-server/client/index.js?http://localhost:9011\");\nmodule.exports = __webpack_require__(/*! ./src/index.js */\"./src/index.js\");\n\n\n//# sourceURL=webpack:///multi_(webpack)-dev-server/client?");
 
 /***/ }),
 
