@@ -1,4 +1,0 @@
-[version of app can be stored on IPFS]
- * App connects to web3 wallet
- * App fetch orgId assosiated with user address, if doesnt exist, ask user to create new orgId
- * 
