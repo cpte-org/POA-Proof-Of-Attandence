@@ -187,13 +187,21 @@
         <h2>Manage Organization</h2>
         <br>
         <form action="#">
+          <!--
+          <label>Action: </label>
+          <input type="radio" id="addOrganization" name="organization" value="1">
+          <label for="addOrganization">Add Location</label>
+          <input type="radio" id="removeOrganization" name="organization" value="0">
+          <label for="removeOrganization">Remove Organization</label>
+          <br>
+          -->
           <label for="orgName_input">Organization name: </label>
           <input type="text" id="orgName_input">
           <br>
           <label for="numLocations_input"># of locations: </label>
           <input type="text" id="numLocations_input">
           <br>
-          <button type="submit" name="submit">Submit</button>
+          <button type="submit" name="submit">Create</button>
         </form>
       </article>
     </div>
@@ -202,16 +210,18 @@
         <h2>Manage Locations</h2>
         <br>
         <form action="#">
+          <!--
           <label>Action: </label>
           <input type="radio" id="addLocation" name="location" value="1">
           <label for="addLocation">Add Location</label>
           <input type="radio" id="removelocation" name="location" value="0">
           <label for="removelocation">Remove Location</label>
           <br>
+          -->
           <label for="location_input">Location name: </label>
           <input type="text" id="location_input">
           <br>
-          <button type="submit" name="submit">Submit</button>
+          <button type="submit" name="submit">Add</button>
         </form>
       </article>
     </div>
@@ -220,12 +230,14 @@
         <h2>Manage Member</h2>
         <br>
         <form action="#">
+          <!--
           <label>Action: </label>
           <input type="radio" id="addMember" name="member" value="1">
           <label for="addMember">Add Member</label>
           <input type="radio" id="removeMember" name="member" value="0">
           <label for="removeMember">Remove Member</label>
           <br>
+          -->
           <label for="memberAddr_input">Member Address: </label>
           <input type="text" id="memberAddr_input">
           <br>
@@ -237,7 +249,7 @@
           <input type="radio" id="staff" name="role" value="0">
           <label for="staff">Staff</label>
           <br>
-          <button type="submit" name="submit">Submit</button>
+          <button type="submit" name="submit">Add</button>
         </form>
       </article>
     </div>
