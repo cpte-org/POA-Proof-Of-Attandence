@@ -22,8 +22,8 @@ let selectedAccount;
 function init() {
 
   console.log("Initializing app");
-  console.log("window.web3 is", window.web3, "window.ethereum is", window.ethereum);
-
+  //console.log("window.web3 is", window.web3, "window.ethereum is", window.ethereum);
+  //console.log("provide is", provider);
   // Check that the web page is run in a secure context,
   // as otherwise MetaMask won't be available
   /*
@@ -40,7 +40,7 @@ function init() {
     disableInjectedProvider: false, // optional. For MetaMask / Brave / Opera.
   });
 
-  console.log("Web3Modal instance is", web3Modal);
+  //console.log("Web3Modal instance is", web3Modal);
 }
 
 
@@ -50,9 +50,9 @@ function init() {
 async function fetchAccountData() {
 
   // Get a Web3 instance for the wallet
-  const web3 = new Web3(provider);
+  let web3 = new Web3(provider);
 
-  console.log("Web3 instance is", web3);
+  //console.log("Web3 instance is", web3);
 
   // Get connected chain id from Ethereum node
   const chainId = await web3.eth.getChainId();
@@ -187,380 +187,385 @@ async function onDisconnect() {
 
 
 async function getAllEvents () {
-  const contract_address = "0xc71a17a57b8785b99d2cb971189dcf5a9a380e2e";
+  const contractAddress = "0x0bd8200f8e0e5ed90d2d683bfe724c25c9b52385";
   const abi = [
-    {
-      "inputs": [],
-      "stateMutability": "nonpayable",
-      "type": "constructor"
-    },
-    {
-      "anonymous": false,
-      "inputs": [
-        {
-          "indexed": false,
-          "internalType": "address",
-          "name": "sender",
-          "type": "address"
-        },
-        {
-          "indexed": false,
-          "internalType": "bytes32",
-          "name": "_organizationId",
-          "type": "bytes32"
-        },
-        {
-          "indexed": false,
-          "internalType": "uint256",
-          "name": "locationId",
-          "type": "uint256"
-        }
-      ],
-      "name": "checkedInEvent",
-      "type": "event"
-    },
-    {
-      "anonymous": false,
-      "inputs": [
-        {
-          "indexed": false,
-          "internalType": "address",
-          "name": "sender",
-          "type": "address"
-        },
-        {
-          "indexed": false,
-          "internalType": "bytes32",
-          "name": "_organizationId",
-          "type": "bytes32"
-        },
-        {
-          "indexed": false,
-          "internalType": "uint256",
-          "name": "locationId",
-          "type": "uint256"
-        }
-      ],
-      "name": "checkedOutEvent",
-      "type": "event"
-    },
-    {
-      "anonymous": false,
-      "inputs": [
-        {
-          "indexed": false,
-          "internalType": "address",
-          "name": "sender",
-          "type": "address"
-        },
-        {
-          "indexed": false,
-          "internalType": "bool",
-          "name": "added",
-          "type": "bool"
-        },
-        {
-          "indexed": true,
-          "internalType": "uint256",
-          "name": "locationId",
-          "type": "uint256"
-        },
-        {
-          "indexed": false,
-          "internalType": "bytes32",
-          "name": "locationName",
-          "type": "bytes32"
-        },
-        {
-          "indexed": false,
-          "internalType": "bytes32",
-          "name": "_organizationId",
-          "type": "bytes32"
-        }
-      ],
-      "name": "locationManagedEvent",
-      "type": "event"
-    },
-    {
-      "anonymous": false,
-      "inputs": [
-        {
-          "indexed": false,
-          "internalType": "address",
-          "name": "sender",
-          "type": "address"
-        },
-        {
-          "indexed": true,
-          "internalType": "bytes32",
-          "name": "_organizationId",
-          "type": "bytes32"
-        },
-        {
-          "indexed": false,
-          "internalType": "bytes32",
-          "name": "_organizationName",
-          "type": "bytes32"
-        },
-        {
-          "indexed": false,
-          "internalType": "address",
-          "name": "_owner",
-          "type": "address"
-        }
-      ],
-      "name": "orgCreatedEvent",
-      "type": "event"
-    },
-    {
-      "anonymous": false,
-      "inputs": [
-        {
-          "indexed": false,
-          "internalType": "address",
-          "name": "sender",
-          "type": "address"
-        },
-        {
-          "indexed": false,
-          "internalType": "bool",
-          "name": "added",
-          "type": "bool"
-        },
-        {
-          "indexed": false,
-          "internalType": "bytes32",
-          "name": "_organizationId",
-          "type": "bytes32"
-        },
-        {
-          "indexed": false,
-          "internalType": "uint8",
-          "name": "_roleId",
-          "type": "uint8"
-        },
-        {
-          "indexed": false,
-          "internalType": "address",
-          "name": "_newMember",
-          "type": "address"
-        }
-      ],
-      "name": "userManagedEvent",
-      "type": "event"
-    },
-    {
-      "inputs": [],
-      "name": "chairperson",
-      "outputs": [
-        {
-          "internalType": "address",
-          "name": "",
-          "type": "address"
-        }
-      ],
-      "stateMutability": "view",
-      "type": "function"
-    },
-    {
-      "inputs": [
-        {
-          "internalType": "bytes32",
-          "name": "_orgId",
-          "type": "bytes32"
-        },
-        {
-          "internalType": "uint256",
-          "name": "_locId",
-          "type": "uint256"
-        }
-      ],
-      "name": "checkIn",
-      "outputs": [],
-      "stateMutability": "nonpayable",
-      "type": "function"
-    },
-    {
-      "inputs": [
-        {
-          "internalType": "bytes32",
-          "name": "_orgId",
-          "type": "bytes32"
-        },
-        {
-          "internalType": "uint256",
-          "name": "_locId",
-          "type": "uint256"
-        }
-      ],
-      "name": "checkOut",
-      "outputs": [],
-      "stateMutability": "nonpayable",
-      "type": "function"
-    },
-    {
-      "inputs": [
-        {
-          "internalType": "bool",
-          "name": "_add",
-          "type": "bool"
-        },
-        {
-          "internalType": "bytes32",
-          "name": "_locName",
-          "type": "bytes32"
-        },
-        {
-          "internalType": "uint256",
-          "name": "_organizationArrayIndex",
-          "type": "uint256"
-        },
-        {
-          "internalType": "bytes32",
-          "name": "_orgId",
-          "type": "bytes32"
-        }
-      ],
-      "name": "manageLocation",
-      "outputs": [],
-      "stateMutability": "nonpayable",
-      "type": "function"
-    },
-    {
-      "inputs": [
-        {
-          "internalType": "bool",
-          "name": "_add",
-          "type": "bool"
-        },
-        {
-          "internalType": "bytes32",
-          "name": "_orgId",
-          "type": "bytes32"
-        },
-        {
-          "internalType": "uint8",
-          "name": "_roleId",
-          "type": "uint8"
-        },
-        {
-          "internalType": "address",
-          "name": "_newMember",
-          "type": "address"
-        }
-      ],
-      "name": "manageMember",
-      "outputs": [],
-      "stateMutability": "nonpayable",
-      "type": "function"
-    },
-    {
-      "inputs": [
-        {
-          "internalType": "bytes32",
-          "name": "_orgName",
-          "type": "bytes32"
-        },
-        {
-          "internalType": "uint256",
-          "name": "_numLocations",
-          "type": "uint256"
-        }
-      ],
-      "name": "manageOrganization",
-      "outputs": [],
-      "stateMutability": "nonpayable",
-      "type": "function"
-    },
-    {
-      "inputs": [
-        {
-          "internalType": "address",
-          "name": "",
-          "type": "address"
-        }
-      ],
-      "name": "members",
-      "outputs": [
-        {
-          "internalType": "bytes32",
-          "name": "memberOfOrg",
-          "type": "bytes32"
-        },
-        {
-          "internalType": "bool",
-          "name": "isRegistred",
-          "type": "bool"
-        },
-        {
-          "internalType": "bool",
-          "name": "owner",
-          "type": "bool"
-        },
-        {
-          "internalType": "bool",
-          "name": "admin",
-          "type": "bool"
-        },
-        {
-          "internalType": "bool",
-          "name": "manager",
-          "type": "bool"
-        },
-        {
-          "internalType": "bool",
-          "name": "staff",
-          "type": "bool"
-        }
-      ],
-      "stateMutability": "view",
-      "type": "function"
-    },
-    {
-      "inputs": [
-        {
-          "internalType": "uint256",
-          "name": "",
-          "type": "uint256"
-        }
-      ],
-      "name": "organizations",
-      "outputs": [
-        {
-          "internalType": "bytes32",
-          "name": "id",
-          "type": "bytes32"
-        },
-        {
-          "internalType": "bytes32",
-          "name": "name",
-          "type": "bytes32"
-        },
-        {
-          "internalType": "address",
-          "name": "owner",
-          "type": "address"
-        },
-        {
-          "internalType": "uint256",
-          "name": "numLocations",
-          "type": "uint256"
-        }
-      ],
-      "stateMutability": "view",
-      "type": "function"
-    }
-  ];
-  var attendanceContract = web3.eth.contract(abi, contract_address);
-  attendanceContract.events.allEvents
-  .then(function(result){
-      console.log(result);
-  })
-  .catch(function(error){
-      console.log(error);
-  });
+		{
+			"inputs": [],
+			"stateMutability": "nonpayable",
+			"type": "constructor"
+		},
+		{
+			"anonymous": false,
+			"inputs": [
+				{
+					"indexed": false,
+					"internalType": "address",
+					"name": "sender",
+					"type": "address"
+				},
+				{
+					"indexed": false,
+					"internalType": "bytes32",
+					"name": "_organizationId",
+					"type": "bytes32"
+				},
+				{
+					"indexed": false,
+					"internalType": "uint256",
+					"name": "locationId",
+					"type": "uint256"
+				}
+			],
+			"name": "checkedInEvent",
+			"type": "event"
+		},
+		{
+			"anonymous": false,
+			"inputs": [
+				{
+					"indexed": false,
+					"internalType": "address",
+					"name": "sender",
+					"type": "address"
+				},
+				{
+					"indexed": false,
+					"internalType": "bytes32",
+					"name": "_organizationId",
+					"type": "bytes32"
+				},
+				{
+					"indexed": false,
+					"internalType": "uint256",
+					"name": "locationId",
+					"type": "uint256"
+				}
+			],
+			"name": "checkedOutEvent",
+			"type": "event"
+		},
+		{
+			"anonymous": false,
+			"inputs": [
+				{
+					"indexed": false,
+					"internalType": "address",
+					"name": "sender",
+					"type": "address"
+				},
+				{
+					"indexed": false,
+					"internalType": "bool",
+					"name": "added",
+					"type": "bool"
+				},
+				{
+					"indexed": true,
+					"internalType": "uint256",
+					"name": "locationId",
+					"type": "uint256"
+				},
+				{
+					"indexed": false,
+					"internalType": "bytes32",
+					"name": "locationName",
+					"type": "bytes32"
+				},
+				{
+					"indexed": false,
+					"internalType": "bytes32",
+					"name": "_organizationId",
+					"type": "bytes32"
+				}
+			],
+			"name": "locationManagedEvent",
+			"type": "event"
+		},
+		{
+			"anonymous": false,
+			"inputs": [
+				{
+					"indexed": false,
+					"internalType": "address",
+					"name": "sender",
+					"type": "address"
+				},
+				{
+					"indexed": true,
+					"internalType": "bytes32",
+					"name": "_organizationId",
+					"type": "bytes32"
+				},
+				{
+					"indexed": false,
+					"internalType": "bytes32",
+					"name": "_organizationName",
+					"type": "bytes32"
+				},
+				{
+					"indexed": false,
+					"internalType": "address",
+					"name": "_owner",
+					"type": "address"
+				}
+			],
+			"name": "orgCreatedEvent",
+			"type": "event"
+		},
+		{
+			"anonymous": false,
+			"inputs": [
+				{
+					"indexed": false,
+					"internalType": "address",
+					"name": "sender",
+					"type": "address"
+				},
+				{
+					"indexed": false,
+					"internalType": "bool",
+					"name": "added",
+					"type": "bool"
+				},
+				{
+					"indexed": false,
+					"internalType": "bytes32",
+					"name": "_organizationId",
+					"type": "bytes32"
+				},
+				{
+					"indexed": false,
+					"internalType": "uint8",
+					"name": "_roleId",
+					"type": "uint8"
+				},
+				{
+					"indexed": false,
+					"internalType": "address",
+					"name": "_newMember",
+					"type": "address"
+				}
+			],
+			"name": "userManagedEvent",
+			"type": "event"
+		},
+		{
+			"inputs": [],
+			"name": "chairperson",
+			"outputs": [
+				{
+					"internalType": "address",
+					"name": "",
+					"type": "address"
+				}
+			],
+			"stateMutability": "view",
+			"type": "function"
+		},
+		{
+			"inputs": [
+				{
+					"internalType": "bytes32",
+					"name": "_orgId",
+					"type": "bytes32"
+				},
+				{
+					"internalType": "uint256",
+					"name": "_locId",
+					"type": "uint256"
+				}
+			],
+			"name": "checkIn",
+			"outputs": [],
+			"stateMutability": "nonpayable",
+			"type": "function"
+		},
+		{
+			"inputs": [
+				{
+					"internalType": "bytes32",
+					"name": "_orgId",
+					"type": "bytes32"
+				},
+				{
+					"internalType": "uint256",
+					"name": "_locId",
+					"type": "uint256"
+				}
+			],
+			"name": "checkOut",
+			"outputs": [],
+			"stateMutability": "nonpayable",
+			"type": "function"
+		},
+		{
+			"inputs": [
+				{
+					"internalType": "bool",
+					"name": "_add",
+					"type": "bool"
+				},
+				{
+					"internalType": "bytes32",
+					"name": "_locName",
+					"type": "bytes32"
+				},
+				{
+					"internalType": "uint256",
+					"name": "_organizationArrayIndex",
+					"type": "uint256"
+				},
+				{
+					"internalType": "bytes32",
+					"name": "_orgId",
+					"type": "bytes32"
+				}
+			],
+			"name": "manageLocation",
+			"outputs": [],
+			"stateMutability": "nonpayable",
+			"type": "function"
+		},
+		{
+			"inputs": [
+				{
+					"internalType": "bool",
+					"name": "_add",
+					"type": "bool"
+				},
+				{
+					"internalType": "bytes32",
+					"name": "_orgId",
+					"type": "bytes32"
+				},
+				{
+					"internalType": "uint8",
+					"name": "_roleId",
+					"type": "uint8"
+				},
+				{
+					"internalType": "address",
+					"name": "_newMember",
+					"type": "address"
+				}
+			],
+			"name": "manageMember",
+			"outputs": [],
+			"stateMutability": "nonpayable",
+			"type": "function"
+		},
+		{
+			"inputs": [
+				{
+					"internalType": "bytes32",
+					"name": "_orgName",
+					"type": "bytes32"
+				},
+				{
+					"internalType": "uint256",
+					"name": "_numLocations",
+					"type": "uint256"
+				}
+			],
+			"name": "manageOrganization",
+			"outputs": [],
+			"stateMutability": "nonpayable",
+			"type": "function"
+		},
+		{
+			"inputs": [
+				{
+					"internalType": "address",
+					"name": "",
+					"type": "address"
+				}
+			],
+			"name": "members",
+			"outputs": [
+				{
+					"internalType": "bytes32",
+					"name": "memberOfOrg",
+					"type": "bytes32"
+				},
+				{
+					"internalType": "bool",
+					"name": "isRegistred",
+					"type": "bool"
+				},
+				{
+					"internalType": "bool",
+					"name": "owner",
+					"type": "bool"
+				},
+				{
+					"internalType": "bool",
+					"name": "admin",
+					"type": "bool"
+				},
+				{
+					"internalType": "bool",
+					"name": "manager",
+					"type": "bool"
+				},
+				{
+					"internalType": "bool",
+					"name": "staff",
+					"type": "bool"
+				}
+			],
+			"stateMutability": "view",
+			"type": "function"
+		},
+		{
+			"inputs": [
+				{
+					"internalType": "uint256",
+					"name": "",
+					"type": "uint256"
+				}
+			],
+			"name": "organizations",
+			"outputs": [
+				{
+					"internalType": "bytes32",
+					"name": "id",
+					"type": "bytes32"
+				},
+				{
+					"internalType": "bytes32",
+					"name": "name",
+					"type": "bytes32"
+				},
+				{
+					"internalType": "address",
+					"name": "owner",
+					"type": "address"
+				},
+				{
+					"internalType": "uint256",
+					"name": "numLocations",
+					"type": "uint256"
+				}
+			],
+			"stateMutability": "view",
+			"type": "function"
+		}
+	];
+  //fix #1
+  web3 = new Web3(new Web3.providers.HttpProvider("https://kovan.infura.io/v3/a754957fbda44262a7d474e90c883203"));
 
-  pushToTable(attendanceContract);
+  var attendanceContract = new web3.eth.Contract(abi, contractAddress);
+  
+  attendanceContract.getPastEvents("checkedInEvent", {
+    fromBlock: 23543520,
+    toBlock: 'latest'
+  }, function(error, events){ 
+    events.forEach(event => {
+      pushToTable(web3.eth.abi.decodeParameters(['address', 'bytes32', 'uint'], event.data)); 
+    });
+  }
+  );
+
 }
 
 async function pushToTable(cellContent){
