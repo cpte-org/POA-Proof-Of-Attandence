@@ -11,7 +11,7 @@ const walletAddress = process.env.WALLETADDR;
 const privateKey = process.env.PRIVATEKEY;
 
 // Contract parameters
-let organizationId = "0xded6f9a302ddf231a6331498ef7072d6f217c54e8c930050c90497827eb3d3d2"; // Device local persistant storage
+let organizationId = "0x7ab28e71ade7c5f63c07fefe75daa19df093a15d1f87c2efae70b52d7d4ca05a"; // Device local persistant storage
 let locationId = "1613668368"; // Retreived from scanned QR code
 
 let gasPrice= "20000000000";

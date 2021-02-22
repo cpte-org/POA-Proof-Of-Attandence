@@ -561,7 +561,11 @@ async function getAllEvents () {
     toBlock: 'latest'
   }, function(error, events){ 
     events.forEach(event => {
-      pushToTable(web3.eth.abi.decodeParameters(['address', 'bytes32', 'uint'], event.data)); 
+		let _data = web3.eth.abi.decodeParameters(['address', 'bytes32', 'uint256'], event.raw.data);
+		//console.log(_data[0]);
+		let rowData = "Sender Address: "+_data[0]+ " . Organization ID: "+_data[1]+ " . Location ID: "+_data[2];
+		pushToTable(rowData); 
+		
     });
   }
   );
