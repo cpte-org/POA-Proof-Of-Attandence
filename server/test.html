@@ -1,0 +1,76 @@
+ 
+<html>
+    <body>
+        <h1>F12</h1>
+
+        <script src="contract.js"></script> 
+
+        <script>
+
+            class Member {
+                constructor(id, role, orgId) {
+                this.id = id;
+                this.role = role;
+                this.orgId = orgId;
+                }
+
+                monitor(monitorObj) {
+                    if(this.orgId == organization.id){
+
+                    }
+                }
+
+                manage(manageObj) {
+                }
+
+            }
+            class Location {
+                constructor(id, name, orgId) {
+                this.id = id;
+                this.name = name;
+                this.orgId = orgId;
+                }
+
+            }
+
+            class Organization {
+                
+                constructor(id, name, numLocations, owner) {
+                this.id = id;
+                this.name = name;
+                this.numLocations = numLocations;
+                this.owner = owner; // connected wallet account/address
+                }
+                
+               
+                // get on-chain details of ORGANIZATION associated with OWNER address  
+                getOrg(owner){
+                    this.id = "0";
+                    this.name = "ikran ltd";
+                    this.numLocations = 10;
+                    this.owner = "0x156416";
+                    console.log("org details fetched successfuly");
+                }
+
+                // setter : create new organization
+                setOrg(owner){
+                    //contract.method.send : send is the only way to emit event on blockchain
+                    //return receipt object..
+                    this.id = "0";
+                    this.name = "ikran dd";
+                    this.numLocations = 10;
+                    this.owner = "0x00000";
+                    
+                    console.log('org created "successfuly"');
+                }
+
+
+
+            }
+            
+            var organization = new Organization();
+            console.log(organization);
+        </script>
+        
+    </body>
+</html>
