@@ -2,7 +2,6 @@
 // 
 // [To-Do] Check networkId, if (!infuraProvidedNetwork): throw error
 
-
  // Unpkg imports
 const Web3Modal = window.Web3Modal.default;
 const evmChains = window.evmChains;
