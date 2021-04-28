@@ -52,7 +52,6 @@ Specifications:
         * like()
         * comment()
         
-        
 To-do:
     [] Check poap role token availability In-contract - https://medium.com/@blockchain101/calling-the-function-of-another-contract-in-solidity-f9edfa921f4c
     [] check if already check-in: return "already checked-in", locationId
