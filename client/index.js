@@ -20,7 +20,6 @@ var web3 = new Web3(new
 Web3.providers.HttpProvider(testnet));
 
 let contract_abi = JSON.parse(fs.readFileSync('./contracts/attendance.json', 'utf8'));
-
 //web3.eth.getBalance(walletAddress).then(bal => { console.log(" [Notice!] Wallet balance: ",bal); });
 
 var attendanceContract = new web3.eth.Contract(contract_abi, contract_address);
