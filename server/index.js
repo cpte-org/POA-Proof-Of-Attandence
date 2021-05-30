@@ -38,7 +38,6 @@ function init() {
     cacheProvider: false, // optional
     disableInjectedProvider: false, // optional. For MetaMask / Brave / Opera.
   });
-
   //console.log("Web3Modal instance is", web3Modal);
 }
 

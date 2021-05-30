@@ -13,6 +13,7 @@
 // Temporary fix #4: [EASY-TESTING]
 // Solution: change to random locationId generation 
 // 
+// 
 
 contract attendance {
     

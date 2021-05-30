@@ -6,7 +6,7 @@ Use Case: Employee check-in and check-out procedure (example: Before the houseke
 
 ## Directory Sructure
 
-POA is dividided in the following applications/projects:
+POA is dividided in the following applications/projects: 
 
 - **eth**: POA Contracts
 - **website**: Public website. Static website for poa
