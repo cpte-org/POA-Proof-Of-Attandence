@@ -1,4 +1,4 @@
-# POA v2: Aztec Network Migration
+# POA v2: Aztec Network Migration with ZKLP
 
 > **Status**: Development Phase  
 > **Created**: 2026-03-05  
@@ -9,7 +9,16 @@
 
 ## Executive Summary
 
-This document describes the migration of the Proof of Attendance (POA) system from Ethereum to the Aztec Network, enabling **privacy-preserving attendance tracking** without compromising the core verification requirements of employers.
+This document describes the migration of the Proof of Attendance (POA) system from Ethereum to the Aztec Network, leveraging **ZKLP (Zero-Knowledge Location Proofs)** to enable privacy-preserving attendance tracking without compromising verification requirements.
+
+### What is ZKLP?
+
+**ZKLP** is a protocol for proving physical presence at a location without revealing:
+- **Who** is requesting access (identity hidden)
+- **Where** else they have accessed (location correlation hidden)
+- **When** they accessed previously (temporal patterns hidden)
+
+Only the specific authorization is proven: *"An authorized person is at this location now."*
 
 ### Why Aztec?
 
@@ -19,7 +28,7 @@ The original Ethereum implementation was abandoned because **all data was public
 - Employer-employee relationships traceable
 - Location history publicly analyzable
 
-Aztec Network solves this through **private state** and **zero-knowledge proofs**, allowing us to prove "attendance occurred" without revealing who, where, or when to unauthorized parties.
+Aztec Network solves this through **private state** and **zero-knowledge proofs**, enabling ZKLP generation where attendance is proven without revealing sensitive metadata.
 
 ---
 
@@ -27,7 +36,7 @@ Aztec Network solves this through **private state** and **zero-knowledge proofs*
 
 ### Core Use Case: Office Building Access Control
 
-**Scenario**: A manager assigns cleaning staff to specific units. Each staff member receives access credentials for their assigned units only. Smart locks verify ZK proofs to grant access without learning the cleaner's identity.
+**Scenario**: A manager assigns cleaning staff to specific units. Each staff member receives ZKLP credentials for their assigned units only. Smart locks verify ZKLPs to grant access without learning the cleaner's identity.
 
 ```
 ┌─────────────────────────────────────────────────────────────┐
@@ -35,20 +44,20 @@ Aztec Network solves this through **private state** and **zero-knowledge proofs*
 │  (Encrypted viewing key - can see full audit trail)         │
 └─────────────────────────────────────────────────────────────┘
                               │
-                              ▼ Issues credentials
+                              ▼ Issues ZKLP credentials
 ┌─────────────────────────────────────────────────────────────┐
 │                 CLEANING STAFF DEVICE                       │
 │  ┌──────────────────────────────────────────────────────┐   │
 │  │ Private Identity Note                                │   │
-│  │ ├─ Unit #205 Access Note                             │   │
-│  │ └─ Unit #207 Access Note                             │   │
+│  │ ├─ Unit #205 ZKLP Credential                         │   │
+│  │ └─ Unit #207 ZKLP Credential                         │   │
 │  └──────────────────────────────────────────────────────┘   │
 └─────────────────────────────────────────────────────────────┘
                               │
-                              ▼ Generates ZK Proof
+                              ▼ Generates ZKLP
 ┌─────────────────────────────────────────────────────────────┐
 │                    SMART LOCK (Unit #205)                   │
-│  Receives: ZK Proof + Nullifier                             │
+│  Receives: ZKLP + Nullifier                                 │
 │  Verifies: "Authorized person requests access"              │
 │  Learns:   NOTHING about identity                           │
 │  Action:   Open door, store nullifier (prevent replay)      │
@@ -67,7 +76,7 @@ Aztec Network solves this through **private state** and **zero-knowledge proofs*
 | **Function Types** | Public only | Private (ZK circuits) + Public (AVM bytecode) |
 | **Identity Model** | Wallet address = identity | Stealth addresses + nullifiers |
 | **Transaction Privacy** | Transparent | Hidden sender, receiver, amount |
-| **Proof Generation** | None (transparent execution) | Client-side ZK proofs |
+| **Proof Generation** | None (transparent execution) | Client-side ZK proofs (ZKLP) |
 | **Access Pattern** | Direct storage reads | Requires private keys to decrypt notes |
 | **Inter-Contract Calls** | Direct calls | Asynchronous message passing |
 
@@ -81,15 +90,15 @@ function checkIn(bytes32 _orgId, uint _locId) public {
 }
 ```
 
-**Aztec (v2)**:
+**Aztec (v2) using ZKLP**:
 ```rust
 #[private]
-fn check_in(
+fn generate_zklp(
     unit_id: Field, 
-    access_note: Note,  // Private input
+    access_credential: Credential,  // Private input
     context: PrivateContext
 ) -> Field {
-    // Generates ZK proof: "I have valid access note for this unit"
+    // Generates ZKLP: "I have valid access credential for this unit"
     // Public output: Nullifier only (prevents double-spending)
     // Nothing about identity revealed
 }
@@ -120,33 +129,52 @@ fn check_in(
 
 ## Technical Architecture
 
-### Directory Structure
+### Repository Structure
+
+This project uses ZKLP as its core protocol:
 
 ```
-poa-attendance/
-├── contracts/                 # Noir smart contracts
-│   ├── main.nr               # Entry point, orchestration
-│   ├── identity.nr           # Identity derivation & management
-│   ├── access_control.nr     # Unit access validation
-│   ├── session.nr            # Nullifier & session management
-│   └── disclosure.nr         # Manager viewing key logic
-├── circuits/                 # Custom ZK circuits (if needed)
-├── aztec-js/                 # TypeScript client code
+poa-attendance/                 # This repository
+├── contracts/                  # Noir smart contracts using ZKLP
+│   ├── main.nr                # Entry point, orchestration
+│   ├── identity.nr            # Identity derivation & management
+│   ├── zklp.nr                # ZKLP generation & verification
+│   ├── session.nr             # Nullifier & session management
+│   └── disclosure.nr          # Manager viewing key logic
+├── circuits/                  # Custom ZKLP circuits (if needed)
+├── aztec-js/                  # TypeScript client code
 │   ├── src/
-│   │   ├── pxeservice.ts     # PXE (Private Execution Environment) client
-│   │   ├── prover.ts         # Proof generation
-│   │   └── account.ts        # Account management
+│   │   ├── pxeservice.ts      # PXE (Private Execution Environment) client
+│   │   ├── zklp_prover.ts     # ZKLP generation
+│   │   └── account.ts         # Account management
 │   └── package.json
-├── smart-lock/               # Smart lock verifier
-│   ├── verifier.ts           # Proof verification logic
-│   └── hardware/             # Embedded lock interface
-├── manager-dashboard/        # Web dashboard
+├── smart-lock/                # Smart lock verifier
+│   ├── verify_zklp.ts         # ZKLP verification logic
+│   └── hardware/              # Embedded lock interface
+├── manager-dashboard/         # Web dashboard
 │   ├── src/
 │   └── package.json
-└── tests/                    # Test suite
+└── tests/                     # Test suite
     ├── unit/
     └── e2e/
 ```
+
+### Future Foundation Repository
+
+```
+aztec-zklp-protocol/           # Future separate foundation repo
+├── contracts/
+│   ├── identity.nr            # Reusable identity primitives
+│   ├── credential.nr          # Non-transferable credential issuance
+│   ├── zklp_core.nr           # Core ZKLP protocol
+│   └── nullifiers.nr          # Session/replay protection
+├── tests/
+├── docs/                      # Developer documentation
+└── examples/
+    └── simple_access/         # Minimal ZKLP example
+```
+
+**POA uses ZKLP**: The POA system will import and extend the `aztec-zklp-protocol` foundation once established.
 
 ### Core Components
 
@@ -155,7 +183,7 @@ poa-attendance/
 ```rust
 // Master identity derivation
 // Each employee has a master secret
-// Access notes are deterministically derived per unit
+// ZKLP credentials are deterministically derived per unit
 
 struct Identity {
     master_secret: Field,
@@ -163,29 +191,41 @@ struct Identity {
 }
 
 impl Identity {
-    fn derive_unit_access_note(&self, unit_id: Field) -> Note {
+    fn derive_zklp_credential(&self, unit_id: Field) -> Credential {
         // Deterministic derivation: hash(master_secret, unit_id)
-        // Same master secret + unit_id always produces same note
-        // Different units produce different notes (privacy)
+        // Same master secret + unit_id always produces same credential
+        // Different units produce different credentials (privacy)
     }
 }
 ```
 
-#### 2. Access Control (`access_control.nr`)
+#### 2. ZKLP Generation (`zklp.nr`)
 
 ```rust
-// Validates unit access
-// Generates ZK proof of membership
+// Validates unit access and generates ZKLP
+// Proof of membership without identity revelation
 
 #[private]
-fn prove_unit_access(
+fn generate_zklp(
     unit_id: Field,
-    access_note: Note,
+    credential: Credential,
     identity: Identity,
+) -> ZKLP {
+    // Verify credential was derived from identity
+    // Verify credential is in unit's authorized set
+    // Generate nullifier to prevent replay
+    // Return ZKLP struct without revealing identity
+}
+
+#[public]
+fn verify_zklp(
+    zklp: ZKLP,
+    unit_id: Field,
 ) -> bool {
-    // Verify note was derived from identity
-    // Verify note is in unit's authorized set
-    // Return proof without revealing identity
+    // Verify ZKLP cryptographic validity
+    // Check nullifier not already spent
+    // Store nullifier to prevent replay
+    // Return verification result
 }
 ```
 
@@ -202,24 +242,24 @@ struct Session {
 }
 
 #[private]
-fn check_in(
+fn generate_zklp_checkin(
     unit_id: Field,
-    access_note: Note,
-) -> Field {
-    // Verify access_note is valid for unit_id
-    // Compute nullifier from access_note
+    credential: Credential,
+) -> ZKLP {
+    // Verify credential is valid for unit_id
+    // Compute nullifier from credential
     // Assert nullifier not already spent
-    // Return nullifier (public)
+    // Return ZKLP (public nullifier)
 }
 
 #[private]
-fn check_out(
+fn generate_zklp_checkout(
     nullifier: Field,
     session_proof: SessionProof,
-) {
+) -> ZKLP {
     // Verify session exists
-    // Nullify the session
-    // Allow new check-in
+    // Generate checkout ZKLP
+    // Nullify the session for reuse
 }
 ```
 
@@ -227,66 +267,97 @@ fn check_out(
 
 ```rust
 // Manager viewing keys
-// Employee notes encrypted to manager's public key
+// Employee ZKLP events encrypted to manager's public key
 
 #[private]
-fn create_auditable_note(
-    event: AttendanceEvent,
+fn create_auditable_zklp_record(
+    zklp_event: ZKLPEvent,
     manager_public_key: Field,
-) -> EncryptedNote {
-    // Encrypt event data with manager's key
+) -> EncryptedZKLPRecord {
+    // Encrypt ZKLP event data with manager's key
     // Store on-chain (only manager can decrypt)
 }
 ```
 
 ---
 
-## Zero-Knowledge Proof Flow
+## ZKLP Flow
 
 ### Check-In Process
 
 ```
 Employee Device                          Smart Lock
      │                                        │
-     │  1. Generate ZK Proof                  │
-     │     - "I have valid Unit #205 note"    │
-     │     - "Note derived from master ID"    │
+     │  1. Generate ZKLP                      │
+     │     - "I have valid Unit #205 cred"    │
+     │     - "Cred derived from master ID"    │
      │     - "Nullifier not spent"            │
      │                                        │
-     │  2. Send Proof + Nullifier ──────────> │
+     │  2. Send ZKLP + Nullifier ───────────> │
      │                                        │
-     │     3. Verify proof                    │
+     │     3. verify_zklp()                   │
      │     4. Check nullifier not in set      │
      │     5. Store nullifier                 │
      │     6. Open door                       │
      │                                        │
 ```
 
-### Proof Composition
+### ZKLP Composition
 
 ```rust
-// Combined proof for check-in
-fn check_in_proof(
+// Core ZKLP structure
+struct ZKLP {
+    nullifier: Field,           // Prevents replay
+    commitment: Field,          // Commits to credential without revealing
+    unit_id: Field,             // Which unit (public)
+    timestamp: Field,           // When (encrypted to manager)
+}
+
+// ZKLP generation circuit
+fn generate_zklp(
     // Private inputs (hidden)
     master_secret: Field,
     unit_id: Field,
     
     // Public inputs (visible)
-    nullifier: Field,
     unit_public_key: Field,
+) -> ZKLP {
+    // 1. Derive credential
+    let credential = hash(master_secret, unit_id);
+    
+    // 2. Verify credential in unit's Merkle tree
+    let valid = merkle_membership_proof(credential, unit_merkle_root);
+    assert(valid);
+    
+    // 3. Compute nullifier
+    let nullifier = compute_nullifier(credential);
+    
+    // 4. Compute commitment (hides credential)
+    let commitment = hash(credential, nullifier);
+    
+    ZKLP {
+        nullifier,
+        commitment,
+        unit_id,
+        timestamp: now(),
+    }
+}
+
+// ZKLP verification
+fn verify_zklp(
+    zklp: ZKLP,
+    spent_nullifiers: Set<Field>,
 ) -> bool {
-    // 1. Derive access note
-    let access_note = hash(master_secret, unit_id);
+    // Verify ZKLP is well-formed
+    assert(zklp.nullifier != 0);
     
-    // 2. Verify note in unit's Merkle tree
-    let valid = merkle_membership_proof(access_note, unit_merkle_root);
+    // Verify nullifier not spent
+    assert(!spent_nullifiers.contains(zklp.nullifier));
     
-    // 3. Compute nullifier matches
-    let computed_nullifier = compute_nullifier(access_note);
-    assert(computed_nullifier == nullifier);
+    // Verify commitment corresponds to valid credential
+    // (Done via Merkle proof verification in circuit)
     
-    // 4. Verify nullifier not spent (checked in public function)
-    valid
+    true
 }
 ```
 
@@ -299,29 +370,29 @@ fn check_in_proof(
 1. **Manager creates employee identity**:
    - Generate master secret
    - Derive public key
-   - Issue unit access notes for assigned units
+   - Issue ZKLP credentials for assigned units
 
 2. **Employee receives credentials**:
    - Master secret (stored securely on device)
-   - Access notes for each assigned unit
+   - ZKLP credentials for each assigned unit
 
 ### Daily Usage
 
 1. **Check-In**:
    - Employee approaches Unit #205
-   - Device generates ZK proof + nullifier
-   - Smart lock verifies, stores nullifier, opens door
-   - Encrypted note stored for manager audit
+   - Device calls `generate_zklp()` with Unit #205 credential
+   - Smart lock calls `verify_zklp()`, stores nullifier, opens door
+   - Encrypted ZKLP record stored for manager audit
 
 2. **Check-Out**:
    - Employee approaches Unit #205 again (or different exit method)
-   - Device generates check-out proof
-   - Smart lock nullifies session
-   - Encrypted note stored for manager audit
+   - Device calls `generate_zklp_checkout()`
+   - Smart lock verifies checkout ZKLP, nullifies session
+   - Encrypted ZKLP record stored for manager audit
 
 3. **Manager Review**:
-   - Manager queries encrypted notes with viewing key
-   - Sees: "Employee X checked in/out Unit Y at time Z"
+   - Manager queries encrypted ZKLP records with viewing key
+   - Sees: "Employee X generated ZKLP for Unit Y at time Z"
    - Processes payroll based on decrypted data
 
 ---
@@ -331,11 +402,12 @@ fn check_in_proof(
 ### Phase 1: Foundation (Current)
 - [ ] Set up Aztec development environment
 - [ ] Implement core identity management
-- [ ] Build unit access control
+- [ ] Build ZKLP generation (`generate_zklp`)
+- [ ] Build ZKLP verification (`verify_zklp`)
 - [ ] Create session/nullifier logic
 
 ### Phase 2: Integration
-- [ ] Develop aztec-js client
+- [ ] Develop aztec-js client with ZKLP prover
 - [ ] Build smart lock verifier
 - [ ] Create manager dashboard
 - [ ] End-to-end testing
@@ -345,6 +417,11 @@ fn check_in_proof(
 - [ ] Testnet deployment
 - [ ] Hardware integration
 - [ ] Documentation
+
+### Future: Foundation Extraction
+- [ ] Extract reusable ZKLP protocol to `aztec-zklp-protocol`
+- [ ] Refactor POA to use foundation as dependency
+- [ ] Document foundation for other developers
 
 ### Future Enhancements (v2.1+)
 - [ ] Time-based restrictions (shift windows)
@@ -363,11 +440,11 @@ fn check_in_proof(
 **Rejected because**: No verifiability, prone to fraud
 
 ### 2. Single Point of Failure
-**Risk**: Employee loses device → loses access credentials
+**Risk**: Employee loses device → loses ZKLP credentials
 
-**Mitigation**: Social recovery (manager can re-issue notes with new master secret)
+**Mitigation**: Social recovery (manager can re-issue credentials with new master secret)
 
-### 3. Proof Generation Time
+### 3. ZKLP Generation Time
 **Consideration**: Client-side ZK proof generation takes 1-3 seconds
 
 **Mitigation**: Acceptable for access control use case (user taps, waits briefly)
@@ -381,14 +458,16 @@ fn check_in_proof(
 | Threat | Mitigation |
 |--------|-----------|
 | Stolen device | Credentials bound to master secret (biometric/PIN protected) |
-| Replay attack | Nullifier prevents double-spending |
+| Replay attack | Nullifier prevents double-spending of ZKLPs |
 | Fake unit | Units have registered public keys in contract |
 | Manager collusion | Smart lock doesn't know identity (can't be coerced) |
 | Blockchain analysis | Only nullifiers public, no linkable data |
+| ZKLP forgery | Cryptographic soundness of ZK circuits |
 
 ### Key Management
 
 - **Master secrets**: Stored in secure enclave on employee device
+- **ZKLP credentials**: Derived on-demand, never stored plaintext
 - **Manager viewing keys**: Hardware security module (HSM) recommended
 - **Contract keys**: Multi-sig for contract upgrades
 
@@ -411,19 +490,33 @@ fn check_in_proof(
 ## Migration Notes from v1
 
 ### Deprecated Components
-- `eth/attendance.sol` → Replaced by Noir contracts
-- `client/index.js` → Replaced by aztec-js client
+- `eth/attendance.sol` → Replaced by Noir contracts with ZKLP
+- `client/index.js` → Replaced by aztec-js client with ZKLP prover
 - `server/index.js` → Simplified (no blockchain node needed, uses PXE)
 
 ### Preserved Concepts
 - Hierarchical roles (Owner → Admin → Manager → Staff)
 - Organization/Unit structure
-- Event emission pattern (now encrypted)
+- Event emission pattern (now encrypted ZKLP records)
 
 ### Breaking Changes
 - All wallet interactions change (Web3 → Aztec.js)
 - No more MetaMask (Aztec uses own account abstraction)
 - Deployment process completely different
+- Core mechanism changes (transparent events → ZKLPs)
+
+---
+
+## Glossary
+
+| Term | Definition |
+|------|------------|
+| **ZKLP** | Zero-Knowledge Location Proof - proves authorization to access a location without revealing identity |
+| **Credential** | Cryptographic proof of authorization derived from master secret |
+| **Nullifier** | Unique identifier that prevents replay of ZKLPs |
+| **Commitment** | Cryptographic hash that binds a credential to a ZKLP without revealing it |
+| **PXE** | Private Execution Environment - Aztec's client-side proving system |
+| **Note** | Private state element in Aztec (encrypted UTXO) |
 
 ---
 
@@ -444,9 +537,9 @@ Same as original project (see LICENSE file)
 
 ## Contact
 
-For questions about this migration, open an issue in this repository.
+For questions about this migration or ZKLP protocol, open an issue in this repository.
 
 ---
 
-*Last updated: 2026-03-05*
+*Last updated: 2026-03-05*  
 *Next review: After Phase 1 completion*
