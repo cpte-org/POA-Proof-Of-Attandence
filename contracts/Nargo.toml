@@ -1,0 +1,11 @@
+[package]
+name = "poa_attendance"
+authors = ["POA Team"]
+compiler_version = ">=0.18.0"
+type = "contract"
+
+[dependencies]
+aztec = { git="https://github.com/AztecProtocol/aztec-nr/", tag="#include_aztec_version", directory="aztec" }
+zklp_protocol = { path = "../../aztec-zklp-protocol/contracts" }
+
+[toolchain]

@@ -1,14 +1,216 @@
-A decentralized protocol to track employees/people's attendance within an organization, built on the Ethereum blockchain (and ipfs).
-    
-Use Case: Employee check-in and check-out procedure (example: Before the housekeeper starts working on an apartement, she must scan the unique qr code attached behind the unit's door to check-in. and when she's done cleaning, she scans again to checkout.)
-    
-# POA: Proof of Attendance
+# POA v2: Proof of Attendance
 
-## Directory Sructure
+> Privacy-preserving attendance tracking using Zero-Knowledge Location Proofs (ZKLP)
 
-POA is dividided in the following applications/projects: 
+## Overview
 
-- **eth**: POA Contracts
-- **website**: Public website. Static website for poa
-- **server**: POA's management server. All server logic goes here
-- **client**: Web application that represents the UI of the application. To be replaced by mobile app
+POA v2 is a complete rewrite of the original Ethereum-based attendance system, now built on the **Aztec Network** using the **ZKLP (Zero-Knowledge Location Proofs)** protocol.
+
+### Why ZKLP?
+
+The original Ethereum implementation exposed all data publicly:
+- Wallet addresses
+- Check-in/check-out timestamps
+- Location history
+- Employer-employee relationships
+
+**ZKLP solves this** by enabling privacy-preserving proof of presence:
+- **Anonymous**: Smart lock doesn't know who's accessing
+- **Non-transferable**: Credentials bound to identity
+- **Verifiable**: Managers can audit via encrypted records
+- **Secure**: Nullifiers prevent replay attacks
+
+## Architecture
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│                     POA v2 SYSTEM                           │
+├─────────────────────────────────────────────────────────────┤
+│                                                             │
+│  ┌─────────────────────────────────────────────────────┐   │
+│  │  ZKLP Protocol (aztec-zklp-protocol)                │   │
+│  │  ├── generate_zklp()                                │   │
+│  │  ├── verify_zklp()                                  │   │
+│  │  ├── Identity management                            │   │
+│  │  └── Nullifier-based sessions                       │   │
+│  └─────────────────────────────────────────────────────┘   │
+│                          ▲                                  │
+│                          │ Uses                              │
+│                          ▼                                  │
+│  ┌─────────────────────────────────────────────────────┐   │
+│  │  POA Attendance (this repo)                         │   │
+│  │  ├── Organization management                        │   │
+│  │  ├── Unit (location) registry                       │   │
+│  │  ├── Employee management                            │   │
+│  │  ├── Check-in/out operations                        │   │
+│  │  └── Manager dashboard                              │   │
+│  └─────────────────────────────────────────────────────┘   │
+│                                                             │
+└─────────────────────────────────────────────────────────────┘
+```
+
+## Quick Start
+
+### Prerequisites
+
+- [Aztec Sandbox](https://docs.aztec.network/developers/getting-started)
+- Node.js 18+
+
+### Installation
+
+```bash
+# Clone repository
+git clone https://github.com/[user]/poa-attendance.git
+cd poa-attendance
+
+# Install dependencies
+cd aztec-js
+npm install
+
+# Build
+npm run build
+```
+
+### Usage
+
+```typescript
+import { POAClient, EmployeeClient, Role } from '@poa/attendance';
+import { createIdentity } from '@poa/zklp-protocol';
+
+// Setup
+const poaClient = new POAClient(pxe, wallet, contractAddress);
+
+// Manager creates organization
+const orgId = await poaClient.createOrganization(
+  Fr.fromString("My Company"),
+  ownerAddress,
+  Fr.ZERO
+);
+
+// Manager registers unit
+const unitId = await poaClient.registerUnit(
+  orgId,
+  Fr.fromString("Office A"),
+  locationHash,
+  credentialRoot
+);
+
+// Manager registers employee
+const employeeIdentity = createIdentity(masterSecret);
+await poaClient.registerEmployee(
+  employeeIdentity,
+  orgId,
+  Role.Staff,
+  [unitId]
+);
+
+// Employee checks in
+const employeeClient = new EmployeeClient(poaClient, masterSecret);
+const { zklp, session } = await employeeClient.checkIn(unitId, merkleProof);
+
+// Smart lock verifies
+const valid = await poaClient.verifyCheckIn(zklp, viewingKey);
+if (valid) {
+  // Open door
+}
+
+// Employee checks out
+const { zklp: exitZKLP } = await employeeClient.checkOut(
+  unitId,
+  zklp.nullifier,
+  merkleProof
+);
+```
+
+## Repository Structure
+
+```
+poa-attendance/
+├── contracts/              # Noir smart contracts
+│   ├── Nargo.toml         # Contract dependencies (uses zklp_protocol)
+│   └── main.nr            # POAAttendance contract
+├── aztec-js/              # TypeScript SDK
+│   ├── src/
+│   │   ├── index.ts       # Main exports
+│   │   ├── types.ts       # POA-specific types
+│   │   └── poa.ts         # POAClient, EmployeeClient, ManagerClient
+│   └── package.json
+├── smart-lock/            # Smart lock verifier
+├── manager-dashboard/     # Web dashboard for managers
+├── tests/                 # Test suite
+│   ├── unit/
+│   └── e2e/
+└── AZTEC_MIGRATION.md     # Migration documentation
+```
+
+## Key Features
+
+### For Employees
+- **Private check-in/out**: Identity hidden from smart lock
+- **Mobile app**: Generate ZKLPs on-device
+- **Session tracking**: Automatic check-out reminders
+
+### For Managers
+- **Organization management**: Create orgs, units, manage employees
+- **Audit trail**: Encrypted records viewable with viewing key
+- **Payroll integration**: Export hours worked
+
+### For Smart Locks
+- **Zero-knowledge verification**: Verify without learning identity
+- **Offline capable**: Cache credential roots
+- **Tamper-proof**: Cryptographic verification
+
+## Privacy Model
+
+| Data | Smart Lock | Blockchain | Manager |
+|------|-----------|------------|---------|
+| Employee Identity | ❌ Hidden | ❌ Hidden | ✅ Visible |
+| Location | ✅ Known | ❌ Hidden | ✅ Visible |
+| Timestamp | ✅ Known | ❌ Hidden | ✅ Visible |
+| Work History | ❌ Hidden | ❌ Hidden | ✅ Visible |
+
+## Documentation
+
+- [AZTEC_MIGRATION.md](AZTEC_MIGRATION.md) - Full migration guide from v1
+- [ZKLP Protocol](https://github.com/[user]/aztec-zklp-protocol) - Foundation protocol
+
+## Development
+
+### Build Contracts
+
+```bash
+cd contracts
+nargo build
+```
+
+### Run Tests
+
+```bash
+cd aztec-js
+npm test
+```
+
+### Deploy
+
+```bash
+# Deploy to Aztec testnet
+npx aztec-cli deploy
+```
+
+## Contributing
+
+Contributions welcome! See [CONTRIBUTING.md](CONTRIBUTING.md).
+
+## License
+
+MIT License - See [LICENSE](LICENSE)
+
+## Acknowledgments
+
+- Aztec Network team
+- ZKLP Protocol contributors
+- Original POA team (v1 Ethereum implementation)
+
+---
+
+**POA v2** - Privacy-preserving attendance for the decentralized world.
