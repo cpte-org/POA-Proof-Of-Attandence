@@ -131,50 +131,36 @@ fn generate_zklp(
 
 ### Repository Structure
 
-This project uses ZKLP as its core protocol:
+This project uses **ZKLP** as its core protocol, implemented in the `aztec-zklp-protocol` foundation repository:
 
 ```
-poa-attendance/                 # This repository
-├── contracts/                  # Noir smart contracts using ZKLP
-│   ├── main.nr                # Entry point, orchestration
-│   ├── identity.nr            # Identity derivation & management
-│   ├── zklp.nr                # ZKLP generation & verification
-│   ├── session.nr             # Nullifier & session management
-│   └── disclosure.nr          # Manager viewing key logic
-├── circuits/                  # Custom ZKLP circuits (if needed)
-├── aztec-js/                  # TypeScript client code
-│   ├── src/
-│   │   ├── pxeservice.ts      # PXE (Private Execution Environment) client
-│   │   ├── zklp_prover.ts     # ZKLP generation
-│   │   └── account.ts         # Account management
-│   └── package.json
-├── smart-lock/                # Smart lock verifier
-│   ├── verify_zklp.ts         # ZKLP verification logic
-│   └── hardware/              # Embedded lock interface
-├── manager-dashboard/         # Web dashboard
-│   ├── src/
-│   └── package.json
-└── tests/                     # Test suite
-    ├── unit/
-    └── e2e/
+~/Git/
+├── aztec-zklp-protocol/        # Foundation protocol repository
+│   ├── contracts/              # Reusable Noir smart contracts
+│   │   ├── identity.nr         # Identity derivation & management
+│   │   ├── credential.nr       # Non-transferable credential issuance
+│   │   ├── zklp_core.nr        # Core ZKLP protocol (generate_zklp, verify_zklp)
+│   │   ├── nullifiers.nr       # Session/replay protection
+│   │   └── disclosure.nr       # Selective disclosure primitives
+│   ├── aztec-js/               # TypeScript SDK
+│   │   ├── src/
+│   │   │   ├── zklp.ts         # ZKLP generation & verification
+│   │   │   ├── identity.ts     # Identity management
+│   │   │   └── nullifier.ts    # Nullifier utilities
+│   │   └── package.json
+│   ├── tests/                  # Test suite
+│   ├── docs/                   # Developer documentation
+│   └── examples/
+│       └── simple_access/      # Minimal ZKLP example
+│
+└── poa-attendance/             # This repository (POA v2)
+    └── contracts/              # POA-specific Noir contracts
+        ├── main.nr             # Entry point
+        ├── poa_core.nr         # POA business logic
+        └── session_tracker.nr  # Check-in/out sessions
 ```
 
-### Future Foundation Repository
-
-```
-aztec-zklp-protocol/           # Future separate foundation repo
-├── contracts/
-│   ├── identity.nr            # Reusable identity primitives
-│   ├── credential.nr          # Non-transferable credential issuance
-│   ├── zklp_core.nr           # Core ZKLP protocol
-│   └── nullifiers.nr          # Session/replay protection
-├── tests/
-├── docs/                      # Developer documentation
-└── examples/
-    └── simple_access/         # Minimal ZKLP example
-```
-
-**POA uses ZKLP**: The POA system will import and extend the `aztec-zklp-protocol` foundation once established.
+**POA uses ZKLP**: The POA system imports and extends the `aztec-zklp-protocol` foundation.
 
 ### Core Components
 
@@ -418,10 +404,20 @@ fn verify_zklp(
 - [ ] Hardware integration
 - [ ] Documentation
 
-### Future: Foundation Extraction
-- [ ] Extract reusable ZKLP protocol to `aztec-zklp-protocol`
-- [ ] Refactor POA to use foundation as dependency
-- [ ] Document foundation for other developers
+### Phase 0: Foundation ✅ COMPLETED
+- [x] Create `aztec-zklp-protocol` repository structure
+- [x] Implement core identity management (`identity.nr`)
+- [x] Implement credential issuance (`credential.nr`)
+- [x] Implement ZKLP core protocol (`generate_zklp`, `verify_zklp`)
+- [x] Implement nullifier system (`nullifiers.nr`)
+- [x] Implement disclosure primitives (`disclosure.nr`)
+- [x] Create TypeScript SDK
+
+### Phase 1: POA Integration (Current)
+- [ ] Import `aztec-zklp-protocol` as dependency
+- [ ] Build POA-specific contracts (`poa_core.nr`)
+- [ ] Build session tracking (`session_tracker.nr`)
+- [ ] Create aztec-js POA client
 
 ### Future Enhancements (v2.1+)
 - [ ] Time-based restrictions (shift windows)
