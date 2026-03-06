@@ -1,0 +1,36 @@
+{
+  "name": "@poa/attendance-contracts",
+  "version": "1.0.0",
+  "description": "POA Attendance Contracts - Privacy-preserving attendance tracking on Aztec",
+  "type": "module",
+  "scripts": {
+    "compile": "nargo compile",
+    "build": "nargo build",
+    "test": "nargo test",
+    "clean": "rm -rf target deployments",
+    
+    "deploy:sandbox": "cd .. && AZTEC_ENV=sandbox npx ts-node contracts/scripts/deploy.ts",
+    "deploy:devnet": "cd .. && AZTEC_ENV=devnet npx ts-node contracts/scripts/deploy.ts",
+    
+    "codegen": "aztec codegen target --outdir src/artifacts"
+  },
+  "keywords": [
+    "aztec",
+    "noir",
+    "attendance",
+    "privacy",
+    "zklp"
+  ],
+  "author": "POA Team",
+  "license": "MIT",
+  "devDependencies": {
+    "@aztec/accounts": "4.0.4",
+    "@aztec/aztec.js": "4.0.4",
+    "@aztec/stdlib": "4.0.4",
+    "ts-node": "^10.9.0",
+    "typescript": "^5.0.0"
+  },
+  "dependencies": {
+    "@poa/zklp-protocol": "file:../../aztec-zklp-protocol"
+  }
+}
