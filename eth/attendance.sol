@@ -10,8 +10,7 @@
 // Solution:
 // Temporary fix #3: _orgId replaced by the org's index in array [privacy and scalling limitation!]
 // Solution: get org object by _orgId instead of index
-// Temporary fix #4: [EASY-TESTING]
-// Solution: change to random locationId generation 
+// Location ids use a counter; organization ids include the array index.
 // 
 // 
 
@@ -68,23 +67,26 @@ contract attendance {
     
     // A dynamically-sized array of `Organization` structs.
     Organization[] public organizations;
+
+    // Location ownership and current attendance (0 means checked-out).
+    mapping(uint => bytes32) private locationOrganizations;
+    mapping(address => uint) private checkedInLocations;
+    uint256 private numLocations;
     
     /// Create a new ballot to choose one of `proposalNames`.
     constructor() public {
         chairperson = msg.sender;
     }
     
-    // Randomness Generator
+    // Unique Id Generators (not random)
     
     function randomnessGenerator () internal view returns (bytes32 hash){
-        //organization.name = owner.address + blockstamp
-        return keccak256(abi.encodePacked(block.timestamp));
+        return keccak256(abi.encodePacked(address(this), organizations.length));
     }
     
-    //xdai blocktime = 5 seconds
-    function uint256randomnessGenerator () internal view returns (uint256 hash){
-        //organization.name = owner.address + blockstamp
-        return block.timestamp;
+    function uint256randomnessGenerator () internal returns (uint256 hash){
+        require(numLocations < uint256(-1), "Location ids exhausted.");
+        return ++numLocations;
     }
     
     ////////////////////////////////
@@ -107,7 +109,8 @@ contract attendance {
                 id: O_UID,
                 name: _orgName,
                 owner: msg.sender,
-                numLocations: _numLocations
+                // _numLocations kept for compatibility; no locations exist yet.
+                numLocations: 0
             }));
         
         members[msg.sender].memberOfOrg = O_UID;
@@ -135,16 +138,32 @@ contract attendance {
     //[TO-DO] add OrganizationId and divisionId
     
     function manageMember(bool _add, bytes32 _orgId, uint8 _roleId, address _newMember) public {
+
+        require(_roleId < 3, "Invalid role.");
+        require(_newMember != address(0), "Invalid member address.");
         
         // Temporary fix #1
-        require(
-            !members[_newMember].owner && !members[_newMember].admin && !members[_newMember].manager && !members[_newMember].staff,
-            "Account role's already assigned!"
-            );
+        if (_add){
+            require(
+                !members[_newMember].isRegistred,
+                "Account role's already assigned!"
+                );
+        } else {
+            require(
+                members[_newMember].isRegistred && members[_newMember].memberOfOrg == _orgId,
+                "Member not in organization."
+                );
+            require(
+                (_roleId==0 && members[_newMember].staff) ||
+                (_roleId==1 && members[_newMember].manager) ||
+                (_roleId==2 && members[_newMember].admin),
+                "Member role does not match."
+                );
+        }
         // End fix
         
         require(
-            members[msg.sender].memberOfOrg == _orgId,
+            members[msg.sender].isRegistred && members[msg.sender].memberOfOrg == _orgId,
             "Only members allowed."
             );
             
@@ -153,26 +172,29 @@ contract attendance {
         
         if (_roleId==0){
             require(
-            members[msg.sender].manager,
-            "Only manager can add staff."
+            members[msg.sender].owner || members[msg.sender].admin || members[msg.sender].manager,
+            "Only manager or above can manage staff."
             );
             members[_newMember].staff = _add;
-            members[_newMember].isRegistred = true;
         
         } else if (_roleId==1){
             require(
-            members[msg.sender].admin,
-            "Only admin can add manager."
+            members[msg.sender].owner || members[msg.sender].admin,
+            "Only admin or above can manage manager."
             );
             members[_newMember].manager = _add;
-            members[_newMember].isRegistred = true;
         } else if (_roleId==2){
             require(
             members[msg.sender].owner,
-            "Only owner can add admin."
+            "Only owner can manage admin."
             );
             members[_newMember].admin = _add;
-            members[_newMember].isRegistred = true;
+        }
+
+        members[_newMember].isRegistred = _add;
+        if (!_add){
+            delete members[_newMember];
+            delete checkedInLocations[_newMember];
         }
         
         emit userManagedEvent(msg.sender, _add, _orgId, _roleId, _newMember);
@@ -190,6 +212,8 @@ contract attendance {
     // Temporary fix #4
     // Currenty supports addLocation only
     function manageLocation(bool _add/*, uint256 _locId*/, bytes32 _locName, uint256 _organizationArrayIndex, bytes32 _orgId) public /* returns (uint256 _locationName)*/{
+
+        require(_add, "Location removal not supported.");
         
         // Note: require owner is for testing purposes (maybe Temporary)
         // Reason: separate responsablities.. smt legal matter like this.. Cring bru
@@ -202,7 +226,13 @@ contract attendance {
         
         Organization storage o = organizations[_organizationArrayIndex];
 
+        require(
+            members[msg.sender].isRegistred && members[msg.sender].memberOfOrg == _orgId && o.id == _orgId,
+            "Organization does not match."
+            );
+
         o.locations[o.numLocations++] = Location({id: _locId, name: _locName, memberOfOrg: _orgId});
+        locationOrganizations[_locId] = _orgId;
         
         //return organizations[_organizationArrayIndex].locations[--o.numLocations].id;
 
@@ -220,16 +250,14 @@ contract attendance {
     
     function checkIn(bytes32 _orgId, uint _locId) public {
         require(
-            members[msg.sender].memberOfOrg == _orgId,
+            members[msg.sender].isRegistred && members[msg.sender].memberOfOrg == _orgId,
             "Only members allowed."
             );
         
         
-        // [T0_DO]
-        // locId exists?
-        
-        
-        
+        require(_locId != 0 && locationOrganizations[_locId] == _orgId, "Location not in organization.");
+        require(checkedInLocations[msg.sender] == 0, "Already checked-in.");
+        checkedInLocations[msg.sender] = _locId;
         
         emit checkedInEvent(msg.sender, _orgId, _locId);
     }
@@ -245,13 +273,12 @@ contract attendance {
     function checkOut(bytes32 _orgId, uint _locId) public {
 
         require(
-            members[msg.sender].memberOfOrg == _orgId,
+            members[msg.sender].isRegistred && members[msg.sender].memberOfOrg == _orgId,
             "Only members allowed."
             );
-        // [T0_DO]    
-        // locId exists?
-        // member currently checked In?
-        // 
+        require(_locId != 0 && locationOrganizations[_locId] == _orgId, "Location not in organization.");
+        require(checkedInLocations[msg.sender] == _locId, "Not checked-in at this location.");
+        delete checkedInLocations[msg.sender];
         
         emit checkedOutEvent(msg.sender, _orgId, _locId);
     }
